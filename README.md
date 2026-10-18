@@ -1,6 +1,7 @@
 # Todooo
 
-캘린더에서 날짜를 골라 그날의 할 일을 관리하는 개인용 Todo 웹.
+캘린더에서 날짜를 골라 그날의 할 일을 관리하는 개인용 Todo 앱.
+모바일 앱 화면을 기준으로 만들었고, PC 브라우저에서는 가운데 폰 프레임 안에 보인다. 홈 화면에 추가하면 앱처럼 열린다.
 기획 내용은 [기획서.md](./기획서.md) 참고.
 
 - 프론트엔드: React + Vite + TypeScript
@@ -41,12 +42,15 @@ Supabase 에 연결하려면 `.env.example` 을 `.env` 로 복사하고 값을 �
 
 ```
 src/
-  App.tsx                 화면 구성, 비밀 문구 게이트, 토스트
-  components/Calendar     월간 캘린더 (일요일 시작, 미완료 개수 배지)
-  components/TodoPanel    선택한 날짜의 Todo 목록 + 날짜 미정 섹션
-  components/TodoItem     Todo 한 줄 (체크, 인라인 편집, 삭제)
-  components/TodoForm     새 Todo 입력 폼
-  data/                   TodoRepository 인터페이스, Supabase / localStorage 구현
-  hooks/useTodos.ts       낙관적 업데이트 상태 관리
-supabase/schema.sql       테이블, RLS, 비밀 문구 검증 함수
+  App.tsx                    폰 프레임, 탭 전환, 시트 열고 닫기, 비밀 문구 게이트, 토스트
+  components/Calendar        접을 수 있는 월간 캘린더 (일요일 시작, 미완료 개수 배지)
+  components/TodoRow         Todo 한 줄 (체크 토글, 탭하면 편집 시트)
+  components/TodoSheet       추가 / 편집 입력 폼 (삭제 버튼 포함)
+  components/Sheet           아래에서 올라오는 시트
+  components/TabBar          하단 탭바 (캘린더 · 날짜 미정 · 설정)
+  components/SettingsScreen  저장 모드 표시, 비밀 문구 지우기, 로컬 데이터 초기화
+  data/                      TodoRepository 인터페이스, Supabase / localStorage 구현
+  hooks/useTodos.ts          낙관적 업데이트 상태 관리
+public/manifest.webmanifest  홈 화면 추가용 매니페스트
+supabase/schema.sql          테이블, RLS, 비밀 문구 검증 함수
 ```

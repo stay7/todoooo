@@ -1,115 +1,123 @@
 .calendar {
+  flex: none;
   background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 20px;
+  border-bottom: 1px solid var(--line);
+  padding: 0 12px 2px;
 }
 
-.head {
+.appBar {
   display: flex;
   align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 4px;
+  padding: 10px 4px 6px;
 }
 
 .month {
   font-size: 20px;
   font-weight: 700;
-  margin: 0 auto 0 8px;
+  margin: 0 4px;
 }
 
 .navBtn,
 .todayBtn {
-  height: 36px;
+  min-height: 40px;
   border-radius: 10px;
-  border: 1px solid var(--line);
-  background: var(--bg);
+  border: none;
+  background: none;
+  color: var(--ink);
 }
 
 .navBtn {
-  width: 36px;
-  font-size: 20px;
+  width: 40px;
+  font-size: 24px;
   line-height: 1;
 }
 
 .todayBtn {
-  padding: 0 14px;
-  font-size: 14px;
-}
-
-.navBtn:hover,
-.todayBtn:hover {
-  background: var(--soft);
+  margin-left: auto;
+  padding: 0 12px;
+  font-size: 13px;
+  font-weight: 600;
+  background: var(--bg);
+  border: 1px solid var(--line);
 }
 
 .weekdays,
 .grid {
   display: grid;
   grid-template-columns: repeat(7, minmax(0, 1fr));
-  gap: 6px;
 }
 
 .weekday {
   text-align: center;
-  font-size: 12px;
+  font-size: 11px;
   color: var(--muted);
-  padding: 4px 0;
+  padding: 2px 0 4px;
 }
 
-.day {
-  position: relative;
-  min-height: 64px;
-  border-radius: 12px;
-  border: 1px solid transparent;
-  background: var(--bg);
+.cell {
+  height: 48px;
+  border: none;
+  background: none;
+  border-radius: 10px;
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  justify-content: space-between;
-  padding: 8px;
-  transition: background 0.12s;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 2px 0 0;
+  gap: 1px;
+  color: var(--ink);
 }
 
-.day:hover {
+.cell:active {
   background: var(--soft);
 }
 
 .outside {
-  opacity: 0.45;
+  opacity: 0.4;
 }
 
-.today {
+.num {
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  border: 1.5px solid transparent;
+}
+
+.today .num {
   border-color: var(--ink);
 }
 
-.selected,
-.selected:hover {
-  background: var(--ink);
-  color: #fff;
-}
-
+.sunday .num,
 .sunday {
   color: var(--accent);
 }
 
-.selected.sunday {
+.selected .num {
+  background: var(--ink);
   color: #fff;
+  border-color: var(--ink);
 }
 
-.num {
-  font-size: 14px;
-  font-weight: 600;
+.marker {
+  height: 14px;
+  display: flex;
+  align-items: center;
 }
 
 .badge {
-  align-self: flex-end;
-  min-width: 22px;
-  height: 22px;
-  padding: 0 6px;
+  min-width: 16px;
+  height: 14px;
+  padding: 0 4px;
   border-radius: 999px;
   background: var(--accent);
   color: #fff;
-  font-size: 12px;
+  font-size: 10px;
   font-weight: 700;
   display: flex;
   align-items: center;
@@ -117,12 +125,17 @@
 }
 
 .done {
-  align-self: flex-end;
+  font-size: 11px;
   color: var(--accent);
   font-weight: 700;
-  font-size: 14px;
 }
 
-.selected .done {
-  color: #fff;
+.collapse {
+  width: 100%;
+  min-height: 30px;
+  border: none;
+  background: none;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
 }

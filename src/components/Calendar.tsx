@@ -5,6 +5,7 @@ import {
   format,
   isSameMonth,
   isToday,
+  parseISO,
   startOfMonth,
   startOfWeek,
 } from 'date-fns';
@@ -20,10 +21,12 @@ interface Props {
   month: Date;
   selected: string;
   counts: Map<string, DayCount>;
+  collapsed: boolean;
   onSelect: (key: string) => void;
   onPrevMonth: () => void;
   onNextMonth: () => void;
   onToday: () => void;
+  onToggleCollapsed: () => void;
 }
 
 const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
@@ -40,24 +43,32 @@ export function Calendar({
   month,
   selected,
   counts,
+  collapsed,
   onSelect,
   onPrevMonth,
   onNextMonth,
   onToday,
+  onToggleCollapsed,
 }: Props) {
-  const { start, end } = visibleRange(month);
-  const days = eachDayOfInterval({ start, end });
+  // 접힌 상태에서는 선택한 날짜가 속한 주 한 줄만 보여준다
+  const range = collapsed
+    ? {
+        start: startOfWeek(parseISO(selected), { weekStartsOn: 0 }),
+        end: endOfWeek(parseISO(selected), { weekStartsOn: 0 }),
+      }
+    : visibleRange(month);
+  const days = eachDayOfInterval(range);
 
   return (
     <section className={styles.calendar} aria-label="캘린더">
-      <header className={styles.head}>
+      <header className={styles.appBar}>
         <button type="button" className={styles.navBtn} onClick={onPrevMonth} aria-label="이전 달">
           ‹
         </button>
+        <h1 className={styles.month}>{format(month, 'yyyy년 M월')}</h1>
         <button type="button" className={styles.navBtn} onClick={onNextMonth} aria-label="다음 달">
           ›
         </button>
-        <h2 className={styles.month}>{format(month, 'yyyy년 M월')}</h2>
         <button type="button" className={styles.todayBtn} onClick={onToday}>
           오늘
         </button>
@@ -76,7 +87,7 @@ export function Calendar({
           const key = toDateKey(day);
           const count = counts.get(key);
           const classes = [
-            styles.day,
+            styles.cell,
             !isSameMonth(day, month) && styles.outside,
             isToday(day) && styles.today,
             key === selected && styles.selected,
@@ -91,23 +102,30 @@ export function Calendar({
               className={classes}
               onClick={() => onSelect(key)}
               aria-pressed={key === selected}
-              aria-label={`${format(day, 'M월 d일')}${
-                count ? `, 남은 할 일 ${count.open}개` : ''
-              }`}
+              aria-label={`${format(day, 'M월 d일')}${count ? `, 남은 할 일 ${count.open}개` : ''}`}
             >
               <span className={styles.num}>{format(day, 'd')}</span>
-              {count && count.total > 0 &&
-                (count.open > 0 ? (
-                  <span className={styles.badge}>{count.open}</span>
-                ) : (
-                  <span className={styles.done} title="모두 완료">
-                    ✓
-                  </span>
-                ))}
+              <span className={styles.marker}>
+                {count && count.total > 0 &&
+                  (count.open > 0 ? (
+                    <span className={styles.badge}>{count.open}</span>
+                  ) : (
+                    <span className={styles.done}>✓</span>
+                  ))}
+              </span>
             </button>
           );
         })}
       </div>
+
+      <button
+        type="button"
+        className={styles.collapse}
+        onClick={onToggleCollapsed}
+        aria-expanded={!collapsed}
+      >
+        {collapsed ? '∨ 펼치기' : '∧ 접기'}
+      </button>
     </section>
   );
 }

@@ -1,57 +1,105 @@
-.app {
-  max-width: 1200px;
+/* 폰 한 대 크기의 틀. 넓은 화면에서는 가운데 폰 프레임으로 보인다 */
+.phone {
+  position: relative;
+  width: 100%;
+  max-width: 430px;
+  height: 100dvh;
   margin: 0 auto;
-  padding: 24px 20px 48px;
-}
-
-.header {
+  background: var(--bg);
+  overflow: hidden;
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 16px;
-  margin-bottom: 20px;
-  flex-wrap: wrap;
+  flex-direction: column;
 }
 
-.logo {
+@media (min-width: 600px) and (min-height: 640px) {
+  .phone {
+    height: min(860px, calc(100vh - 48px));
+    border-radius: 40px;
+    border: 10px solid #1c1c1e;
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.3);
+  }
+}
+
+.screen {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.content {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 96px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.appBar {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 20px 10px;
+}
+
+.appBarTitle {
+  margin: 0;
   font-size: 24px;
   font-weight: 700;
-  letter-spacing: -0.01em;
-  margin: 0;
 }
 
-.headerRight {
+.dayHeader {
   display: flex;
-  align-items: center;
-  gap: 12px;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 14px 16px 8px;
 }
 
-.banner {
+.dayTitle {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 700;
+}
+
+.remaining {
   font-size: 13px;
-  color: var(--accent);
-  background: var(--accent-soft);
-  padding: 6px 12px;
-  border-radius: 999px;
-}
-
-.linkButton {
-  background: none;
-  border: none;
   color: var(--muted);
-  font-size: 13px;
-  text-decoration: underline;
-  padding: 4px;
+  font-weight: 600;
 }
 
-.layout {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(320px, 1fr);
-  gap: 20px;
-  align-items: start;
+.list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--line);
 }
 
-@media (max-width: 880px) {
-  .layout {
-    grid-template-columns: 1fr;
-  }
+.empty {
+  margin: 0;
+  padding: 24px 20px;
+  color: var(--muted);
+  font-size: 14px;
+  text-align: center;
+  line-height: 1.5;
+}
+
+.fab {
+  position: absolute;
+  right: 20px;
+  bottom: calc(60px + 16px + env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  border: none;
+  background: var(--ink);
+  color: #fff;
+  font-size: 32px;
+  line-height: 1;
+  box-shadow: 0 8px 20px rgba(23, 56, 47, 0.35);
+  z-index: 5;
+}
+
+.fab:active {
+  transform: scale(0.96);
 }

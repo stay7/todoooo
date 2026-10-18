@@ -75,3 +75,8 @@ export function createLocalRepository(): TodoRepository {
     },
   };
 }
+
+/** 로컬 저장 모드의 데이터를 모두 지운다 (설정 탭) */
+export function clearLocalTodos(): void {
+  localStorage.removeItem(STORAGE_KEY);
+}

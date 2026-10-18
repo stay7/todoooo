@@ -1,0 +1,55 @@
+.root {
+  position: absolute;
+  inset: 0;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(23, 56, 47, 0.45);
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.panel {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: var(--surface);
+  border-radius: 20px 20px 0 0;
+  padding: 8px 20px calc(20px + env(safe-area-inset-bottom));
+  transform: translateY(100%);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  max-height: 90%;
+  overflow-y: auto;
+  box-shadow: 0 -8px 32px rgba(23, 56, 47, 0.15);
+}
+
+.open {
+  pointer-events: auto;
+}
+
+.open .backdrop {
+  opacity: 1;
+}
+
+.open .panel {
+  transform: translateY(0);
+}
+
+.handle {
+  width: 40px;
+  height: 4px;
+  border-radius: 2px;
+  background: var(--line);
+  margin: 0 auto 12px;
+}
+
+.title {
+  margin: 0 0 14px;
+  font-size: 18px;
+  font-weight: 700;
+}

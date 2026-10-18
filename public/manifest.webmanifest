@@ -1,0 +1,14 @@
+{
+  "name": "Todooo",
+  "short_name": "Todooo",
+  "description": "캘린더로 관리하는 개인용 Todo",
+  "start_url": ".",
+  "scope": ".",
+  "display": "standalone",
+  "background_color": "#f6f4ef",
+  "theme_color": "#f6f4ef",
+  "lang": "ko",
+  "icons": [
+    { "src": "icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" }
+  ]
+}
