@@ -1,0 +1,59 @@
+.wrap {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px 16px;
+}
+
+.card {
+  width: 100%;
+  max-width: 420px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.title {
+  margin: 0;
+  font-size: 26px;
+}
+
+.desc {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.error {
+  margin: 0;
+  font-size: 14px;
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.input {
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  background: #fff;
+}
+
+.button {
+  padding: 10px 14px;
+  border-radius: 10px;
+  border: none;
+  background: var(--ink);
+  color: #fff;
+  font-weight: 600;
+}
+
+.button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}

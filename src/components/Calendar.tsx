@@ -1,0 +1,113 @@
+import {
+  eachDayOfInterval,
+  endOfMonth,
+  endOfWeek,
+  format,
+  isSameMonth,
+  isToday,
+  startOfMonth,
+  startOfWeek,
+} from 'date-fns';
+import { toDateKey } from '../lib/format';
+import styles from './Calendar.module.css';
+
+export interface DayCount {
+  open: number;
+  total: number;
+}
+
+interface Props {
+  month: Date;
+  selected: string;
+  counts: Map<string, DayCount>;
+  onSelect: (key: string) => void;
+  onPrevMonth: () => void;
+  onNextMonth: () => void;
+  onToday: () => void;
+}
+
+const WEEKDAYS = ['일', '월', '화', '수', '목', '금', '토'];
+
+/** 달력 그리드에 보이는 첫날~마지막날 (일요일 시작) */
+export function visibleRange(month: Date): { start: Date; end: Date } {
+  return {
+    start: startOfWeek(startOfMonth(month), { weekStartsOn: 0 }),
+    end: endOfWeek(endOfMonth(month), { weekStartsOn: 0 }),
+  };
+}
+
+export function Calendar({
+  month,
+  selected,
+  counts,
+  onSelect,
+  onPrevMonth,
+  onNextMonth,
+  onToday,
+}: Props) {
+  const { start, end } = visibleRange(month);
+  const days = eachDayOfInterval({ start, end });
+
+  return (
+    <section className={styles.calendar} aria-label="캘린더">
+      <header className={styles.head}>
+        <button type="button" className={styles.navBtn} onClick={onPrevMonth} aria-label="이전 달">
+          ‹
+        </button>
+        <button type="button" className={styles.navBtn} onClick={onNextMonth} aria-label="다음 달">
+          ›
+        </button>
+        <h2 className={styles.month}>{format(month, 'yyyy년 M월')}</h2>
+        <button type="button" className={styles.todayBtn} onClick={onToday}>
+          오늘
+        </button>
+      </header>
+
+      <div className={styles.weekdays} aria-hidden="true">
+        {WEEKDAYS.map((w, i) => (
+          <div key={w} className={`${styles.weekday} ${i === 0 ? styles.sunday : ''}`}>
+            {w}
+          </div>
+        ))}
+      </div>
+
+      <div className={styles.grid} role="grid">
+        {days.map((day) => {
+          const key = toDateKey(day);
+          const count = counts.get(key);
+          const classes = [
+            styles.day,
+            !isSameMonth(day, month) && styles.outside,
+            isToday(day) && styles.today,
+            key === selected && styles.selected,
+            day.getDay() === 0 && styles.sunday,
+          ]
+            .filter(Boolean)
+            .join(' ');
+          return (
+            <button
+              type="button"
+              key={key}
+              className={classes}
+              onClick={() => onSelect(key)}
+              aria-pressed={key === selected}
+              aria-label={`${format(day, 'M월 d일')}${
+                count ? `, 남은 할 일 ${count.open}개` : ''
+              }`}
+            >
+              <span className={styles.num}>{format(day, 'd')}</span>
+              {count && count.total > 0 &&
+                (count.open > 0 ? (
+                  <span className={styles.badge}>{count.open}</span>
+                ) : (
+                  <span className={styles.done} title="모두 완료">
+                    ✓
+                  </span>
+                ))}
+            </button>
+          );
+        })}
+      </div>
+    </section>
+  );
+}
