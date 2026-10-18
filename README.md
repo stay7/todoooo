@@ -23,7 +23,9 @@ Supabase 에 연결하려면 `.env.example` 을 `.env` 로 복사하고 값을 �
 1. https://supabase.com 에서 프로젝트를 만든다.
 2. `supabase/schema.sql` 을 열어 맨 아래 `<비밀문구>` 를 본인만 아는 문구로 바꾼다.
 3. Supabase 대시보드 > **SQL Editor** 에 전체 내용을 붙여넣고 실행한다.
-4. 대시보드 > **Project Settings > API** 에서 `Project URL` 과 `anon public` 키를 복사한다.
+4. 대시보드 > **Settings > API Keys** 에서 `Project URL` 과 `publishable` 키(`sb_publishable_...`)를 복사한다.
+   예전 방식의 `anon` 키도 그대로 쓸 수 있다. 둘 다 공개돼도 되는 키이고, 데이터는 RLS 정책이 지킨다.
+5. Free 플랜 프로젝트는 1주일 동안 쓰지 않으면 일시정지된다. 시연 전에는 대시보드에 한 번 들어가 풀어 둔다.
 
 비밀 문구는 서버에 해시로만 저장된다. 앱 첫 실행 때 같은 문구를 입력하면 브라우저에 저장되고,
 매 요청 헤더(`x-owner-key`)로 보내져 RLS 정책이 검사한다. 문구가 다르면 아무것도 읽고 쓸 수 없다.
