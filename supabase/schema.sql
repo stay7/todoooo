@@ -1,8 +1,11 @@
 -- Todooo Supabase 스키마
 -- Supabase 대시보드 > SQL Editor 에 붙여넣고 실행한다.
--- 실행 전에 맨 아래 "비밀 문구 등록" 부분의 <비밀문구> 를 본인 문구로 바꾼다.
+--
+-- 공개 모드: 로그인도 비밀 문구도 없이, 앱에 들어온 누구나 Todo 를 읽고 쓸 수 있다.
+-- publishable 키는 브라우저 번들에 그대로 들어가므로, 주소를 아는 사람은 누구나
+-- 모든 Todo 를 보고 수정·삭제할 수 있다. 강의 시연용 설정이며 개인 정보는 담지 않는다.
 
-create extension if not exists pgcrypto with schema extensions;
+begin;
 
 -- 1. todos 테이블 --------------------------------------------------------
 create table if not exists public.todos (
@@ -20,48 +23,16 @@ create table if not exists public.todos (
 create index if not exists todos_due_date_created_at_idx
   on public.todos (due_date, created_at);
 
--- 2. 비밀 문구 저장 (API 에 노출되지 않는 스키마) -------------------------
-create schema if not exists private;
-
-create table if not exists private.owner_secret (
-  id boolean primary key default true check (id),  -- 행을 1개만 허용
-  key_hash text not null
-);
-
--- 3. 요청 헤더 x-owner-key 가 저장된 해시와 일치하는지 검사 --------------
-create or replace function public.is_owner()
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from private.owner_secret s
-    where s.key_hash = encode(
-      extensions.digest(
-        coalesce(current_setting('request.headers', true)::json ->> 'x-owner-key', ''),
-        'sha256'
-      ),
-      'hex'
-    )
-  );
-$$;
-
-grant execute on function public.is_owner() to anon;
-
--- 4. RLS: 비밀 문구가 맞을 때만 읽기/쓰기 허용 ----------------------------
+-- 2. RLS: 켜 두고, 모두 허용하는 정책을 명시적으로 둔다 --------------------
+-- RLS 를 끄는 대신 이렇게 두면 "의도한 공개"임이 정책에 드러난다.
 alter table public.todos enable row level security;
+grant select, insert, update, delete on public.todos to anon, authenticated;
 
-drop policy if exists "owner only" on public.todos;
-create policy "owner only" on public.todos
+drop policy if exists "public access" on public.todos;
+create policy "public access" on public.todos
   for all
-  to anon
-  using (public.is_owner())
-  with check (public.is_owner());
+  to anon, authenticated
+  using (true)
+  with check (true);
 
--- 5. 비밀 문구 등록 (한 번만. 바꾸고 싶으면 다시 실행) ---------------------
-insert into private.owner_secret (id, key_hash)
-values (true, encode(extensions.digest('<비밀문구>', 'sha256'), 'hex'))
-on conflict (id) do update set key_hash = excluded.key_hash;
+commit;

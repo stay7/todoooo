@@ -21,14 +21,16 @@ Supabase 에 연결하려면 `.env.example` 을 `.env` 로 복사하고 값을 �
 ## Supabase 설정
 
 1. https://supabase.com 에서 프로젝트를 만든다.
-2. `supabase/schema.sql` 을 열어 맨 아래 `<비밀문구>` 를 본인만 아는 문구로 바꾼다.
-3. Supabase 대시보드 > **SQL Editor** 에 전체 내용을 붙여넣고 실행한다.
-4. 대시보드 > **Settings > API Keys** 에서 `Project URL` 과 `publishable` 키(`sb_publishable_...`)를 복사한다.
-   예전 방식의 `anon` 키도 그대로 쓸 수 있다. 둘 다 공개돼도 되는 키이고, 데이터는 RLS 정책이 지킨다.
-5. Free 플랜 프로젝트는 1주일 동안 쓰지 않으면 일시정지된다. 시연 전에는 대시보드에 한 번 들어가 풀어 둔다.
+2. Supabase 대시보드 > **SQL Editor** 에 `supabase/schema.sql` 전체 내용을 붙여넣고 실행한다. 테이블과 RLS 접근 규칙을 만든다.
+3. 프로젝트 홈의 `Project URL` 과 **Settings > API Keys** 의 `publishable` 키(`sb_publishable_...`)를 복사해 `.env.local` 에 넣는다. 개발 서버가 실행 중이었다면 다시 시작한다.
+   예전 방식의 `anon` 키도 그대로 쓸 수 있다.
+4. Free 플랜 프로젝트는 1주일 동안 쓰지 않으면 일시정지된다. 시연 전에는 대시보드에 한 번 들어가 풀어 둔다.
 
-비밀 문구는 서버에 해시로만 저장된다. 앱 첫 실행 때 같은 문구를 입력하면 브라우저에 저장되고,
-매 요청 헤더(`x-owner-key`)로 보내져 RLS 정책이 검사한다. 문구가 다르면 아무것도 읽고 쓸 수 없다.
+> **공개 모드 주의**
+> 로그인도 비밀 문구도 없다. RLS 정책이 `anon` 에게 모든 읽기·쓰기를 허용하고,
+> publishable 키는 브라우저 번들에 그대로 들어간다. 즉 **배포 주소를 아는 누구나**
+> 모든 Todo 를 보고 수정·삭제할 수 있다. 강의 시연용 설정이므로 개인 정보는 담지 않는다.
+> 기존 브라우저 저장 데이터는 그대로 남으며 서버로 자동 전송되지 않는다.
 
 ## GitHub Pages 배포
 
@@ -44,15 +46,15 @@ Supabase 에 연결하려면 `.env.example` 을 `.env` 로 복사하고 값을 �
 
 ```
 src/
-  App.tsx                    폰 프레임, 탭 전환, 시트 열고 닫기, 비밀 문구 게이트, 토스트
+  App.tsx                    폰 프레임, 탭 전환, 시트 열고 닫기, 토스트
   components/Calendar        접을 수 있는 월간 캘린더 (일요일 시작, 미완료 개수 배지)
   components/TodoRow         Todo 한 줄 (체크 토글, 탭하면 편집 시트)
   components/TodoSheet       추가 / 편집 입력 폼 (삭제 버튼 포함)
   components/Sheet           아래에서 올라오는 시트
   components/TabBar          하단 탭바 (캘린더 · 날짜 미정 · 설정)
-  components/SettingsScreen  저장 모드 표시, 비밀 문구 지우기, 로컬 데이터 초기화
+  components/SettingsScreen  저장 모드 표시, 로컬 데이터 초기화
   data/                      TodoRepository 인터페이스, Supabase / localStorage 구현
   hooks/useTodos.ts          낙관적 업데이트 상태 관리
 public/manifest.webmanifest  홈 화면 추가용 매니페스트
-supabase/schema.sql          테이블, RLS, 비밀 문구 검증 함수
+supabase/schema.sql          테이블, 공개 접근 RLS 정책
 ```

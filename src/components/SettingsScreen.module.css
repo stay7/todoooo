@@ -57,7 +57,6 @@
   color: var(--ink);
 }
 
-.action,
 .danger {
   align-self: flex-start;
   min-height: 40px;
