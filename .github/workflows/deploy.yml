@@ -24,10 +24,14 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
+      # 시연 폴백 브랜치: 저장소 시크릿에 의존하지 않도록 값을 직접 넣어 둔다.
+      # 이 브랜치를 main 으로 push 하면 시크릿 설정과 무관하게 Supabase 모드로 배포된다.
+      # publishable 키는 브라우저 번들에 노출되는 공개용 키이고, todos 테이블은
+      # 의도적으로 누구나 읽고 쓸 수 있는 공개 모드다 (supabase/schema.sql 참고).
       - run: npm run build
         env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
+          VITE_SUPABASE_URL: https://gutoktoylrfezckgwpzp.supabase.co
+          VITE_SUPABASE_ANON_KEY: sb_publishable_5Ze5V-uynBo8uXtvxpHs3Q_qUFbBuDi
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
         with:
