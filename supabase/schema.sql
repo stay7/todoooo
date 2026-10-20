@@ -1,8 +1,8 @@
 -- Todooo Supabase 스키마
 -- Supabase 대시보드 > SQL Editor 에 붙여넣고 실행한다.
--- 실행 전에 맨 아래 "비밀 문구 등록" 부분의 <비밀문구> 를 본인 문구로 바꾼다.
-
-create extension if not exists pgcrypto with schema extensions;
+--
+-- 주의: 로그인이 없는 "공개 모드" 다. 앱 주소를 아는 누구나 모든 Todo 를
+-- 읽고 수정·삭제할 수 있다. 강의 시연용이므로 개인 정보는 담지 않는다.
 
 -- 1. todos 테이블 --------------------------------------------------------
 create table if not exists public.todos (
@@ -20,48 +20,18 @@ create table if not exists public.todos (
 create index if not exists todos_due_date_created_at_idx
   on public.todos (due_date, created_at);
 
--- 2. 비밀 문구 저장 (API 에 노출되지 않는 스키마) -------------------------
-create schema if not exists private;
-
-create table if not exists private.owner_secret (
-  id boolean primary key default true check (id),  -- 행을 1개만 허용
-  key_hash text not null
-);
-
--- 3. 요청 헤더 x-owner-key 가 저장된 해시와 일치하는지 검사 --------------
-create or replace function public.is_owner()
-returns boolean
-language sql
-stable
-security definer
-set search_path = ''
-as $$
-  select exists (
-    select 1
-    from private.owner_secret s
-    where s.key_hash = encode(
-      extensions.digest(
-        coalesce(current_setting('request.headers', true)::json ->> 'x-owner-key', ''),
-        'sha256'
-      ),
-      'hex'
-    )
-  );
-$$;
-
-grant execute on function public.is_owner() to anon;
-
--- 4. RLS: 비밀 문구가 맞을 때만 읽기/쓰기 허용 ----------------------------
+-- 2. RLS: 켜 둔 채로 전체 허용 --------------------------------------------
+-- RLS 를 끄면 Supabase 가 경고하고, 켜 두고 정책이 없으면 아무것도 못 읽는다.
+-- 그래서 켠 상태에서 anon(publishable 키) 과 로그인 사용자에게 전부 허용한다.
 alter table public.todos enable row level security;
 
-drop policy if exists "owner only" on public.todos;
-create policy "owner only" on public.todos
+drop policy if exists "public access" on public.todos;
+create policy "public access" on public.todos
   for all
-  to anon
-  using (public.is_owner())
-  with check (public.is_owner());
+  to anon, authenticated
+  using (true)
+  with check (true);
 
--- 5. 비밀 문구 등록 (한 번만. 바꾸고 싶으면 다시 실행) ---------------------
-insert into private.owner_secret (id, key_hash)
-values (true, encode(extensions.digest('<비밀문구>', 'sha256'), 'hex'))
-on conflict (id) do update set key_hash = excluded.key_hash;
+-- 3. Data API 노출 -------------------------------------------------------
+-- 프로젝트 설정에 따라 새 테이블이 자동으로 노출되지 않을 수 있어 명시한다.
+grant select, insert, update, delete on public.todos to anon, authenticated;

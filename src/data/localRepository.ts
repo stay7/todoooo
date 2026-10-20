@@ -22,10 +22,6 @@ function save(todos: Todo[]): void {
 
 export function createLocalRepository(): TodoRepository {
   return {
-    async verifyOwner() {
-      return true;
-    },
-
     async listRange(from, to) {
       return load()
         .filter((t) => t.due_date !== null && t.due_date >= from && t.due_date <= to)

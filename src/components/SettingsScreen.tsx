@@ -3,11 +3,10 @@ import styles from './SettingsScreen.module.css';
 
 interface Props {
   supabaseConfigured: boolean;
-  onResetKey: () => void;
   onClearLocal: () => void;
 }
 
-export function SettingsScreen({ supabaseConfigured, onResetKey, onClearLocal }: Props) {
+export function SettingsScreen({ supabaseConfigured, onClearLocal }: Props) {
   const [confirmClear, setConfirmClear] = useState(false);
 
   return (
@@ -23,11 +22,9 @@ export function SettingsScreen({ supabaseConfigured, onResetKey, onClearLocal }:
             <>
               <p className={styles.main}>서버 (Supabase)</p>
               <p className={styles.sub}>
-                어떤 기기에서 열어도 같은 데이터를 봅니다. 비밀 문구가 맞을 때만 읽고 쓸 수 있습니다.
+                어떤 기기에서 열어도 같은 데이터를 봅니다. 로그인 없이 누구나 쓸 수 있게 열어 둔
+                강의 시연용이라, 주소를 아는 사람은 모두 같은 목록을 보고 고칠 수 있습니다.
               </p>
-              <button type="button" className={styles.action} onClick={onResetKey}>
-                비밀 문구 지우기
-              </button>
             </>
           ) : (
             <>

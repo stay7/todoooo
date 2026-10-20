@@ -1,44 +1,25 @@
 import { createClient } from '@supabase/supabase-js';
 import type { Todo } from '../types';
-import { OwnerKeyRejectedError, type TodoRepository } from './repository';
+import type { TodoRepository } from './repository';
 
-interface PgError {
-  code?: string;
-  message: string;
-}
-
-function toError(error: PgError): Error {
-  // 42501: RLS 정책 위반 (insert/update 거부)
-  // PGRST116: single() 을 요청했는데 행이 없음 (RLS 로 보이지 않는 행을 수정하려 할 때)
-  if (error.code === '42501' || error.code === 'PGRST116') return new OwnerKeyRejectedError();
-  return new Error(error.message);
-}
-
-export function createSupabaseRepository(
-  url: string,
-  anonKey: string,
-  ownerKey: string,
-): TodoRepository {
+/**
+ * Supabase (PostgreSQL) 저장소.
+ * 로그인이 없는 공개 모드라서 publishable 키만으로 읽고 쓴다.
+ */
+export function createSupabaseRepository(url: string, anonKey: string): TodoRepository {
   const client = createClient(url, anonKey, {
-    global: { headers: { 'x-owner-key': ownerKey } },
     auth: { persistSession: false, autoRefreshToken: false },
   });
   const todos = () => client.from('todos');
 
   return {
-    async verifyOwner() {
-      const { data, error } = await client.rpc('is_owner');
-      if (error) throw new Error(error.message);
-      return data === true;
-    },
-
     async listRange(from, to) {
       const { data, error } = await todos()
         .select('*')
         .gte('due_date', from)
         .lte('due_date', to)
         .order('created_at', { ascending: true });
-      if (error) throw toError(error);
+      if (error) throw new Error(error.message);
       return data as Todo[];
     },
 
@@ -47,13 +28,13 @@ export function createSupabaseRepository(
         .select('*')
         .is('due_date', null)
         .order('created_at', { ascending: true });
-      if (error) throw toError(error);
+      if (error) throw new Error(error.message);
       return data as Todo[];
     },
 
     async create(input) {
       const { data, error } = await todos().insert(input).select().single();
-      if (error) throw toError(error);
+      if (error) throw new Error(error.message);
       return data as Todo;
     },
 
@@ -62,13 +43,13 @@ export function createSupabaseRepository(
       const row: Record<string, unknown> = { ...patch, updated_at: now };
       if (patch.completed !== undefined) row.completed_at = patch.completed ? now : null;
       const { data, error } = await todos().update(row).eq('id', id).select().single();
-      if (error) throw toError(error);
+      if (error) throw new Error(error.message);
       return data as Todo;
     },
 
     async remove(id) {
       const { error } = await todos().delete().eq('id', id);
-      if (error) throw toError(error);
+      if (error) throw new Error(error.message);
     },
   };
 }

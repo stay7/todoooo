@@ -1,7 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import { addMonths, startOfMonth, subMonths } from 'date-fns';
 import { Calendar, visibleRange, type DayCount } from './components/Calendar';
-import { OwnerKeyGate } from './components/OwnerKeyGate';
 import { SettingsScreen } from './components/SettingsScreen';
 import { Sheet } from './components/Sheet';
 import { TabBar, type Tab } from './components/TabBar';
@@ -9,11 +8,10 @@ import { Toast } from './components/Toast';
 import { TodoRow } from './components/TodoRow';
 import { TodoSheet, type SheetMode } from './components/TodoSheet';
 import { clearLocalTodos, createLocalRepository } from './data/localRepository';
-import { OwnerKeyRejectedError, type TodoRepository } from './data/repository';
+import type { TodoRepository } from './data/repository';
 import { createSupabaseRepository } from './data/supabaseRepository';
 import { useTodos } from './hooks/useTodos';
 import { formatDateHeading, formatMinutes, toDateKey } from './lib/format';
-import { clearOwnerKey, getOwnerKey, setOwnerKey } from './lib/ownerKey';
 import styles from './App.module.css';
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL as string | undefined;
@@ -21,48 +19,12 @@ const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY as string | und
 const supabaseConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY);
 const COLLAPSED_KEY = 'todooo.calendarCollapsed';
 
+// 저장소는 환경변수로만 결정되므로 모듈이 로드될 때 한 번만 만든다
+const repo: TodoRepository = supabaseConfigured
+  ? createSupabaseRepository(SUPABASE_URL!, SUPABASE_ANON_KEY!)
+  : createLocalRepository();
+
 export default function App() {
-  const [ownerKey, setOwnerKeyState] = useState<string | null>(() => getOwnerKey());
-  const [gateMessage, setGateMessage] = useState<string | null>(null);
-
-  const resetKey = useCallback((message: string | null) => {
-    clearOwnerKey();
-    setGateMessage(message);
-    setOwnerKeyState(null);
-  }, []);
-
-  if (supabaseConfigured && !ownerKey) {
-    return (
-      <div className={styles.phone}>
-        <OwnerKeyGate
-          message={gateMessage}
-          onSubmit={(key) => {
-            setOwnerKey(key);
-            setGateMessage(null);
-            setOwnerKeyState(key);
-          }}
-        />
-      </div>
-    );
-  }
-
-  return <TodoApp key={ownerKey ?? 'local'} ownerKey={ownerKey} onResetKey={resetKey} />;
-}
-
-interface TodoAppProps {
-  ownerKey: string | null;
-  onResetKey: (message: string | null) => void;
-}
-
-function TodoApp({ ownerKey, onResetKey }: TodoAppProps) {
-  const repo = useMemo<TodoRepository>(
-    () =>
-      supabaseConfigured && ownerKey
-        ? createSupabaseRepository(SUPABASE_URL!, SUPABASE_ANON_KEY!, ownerKey)
-        : createLocalRepository(),
-    [ownerKey],
-  );
-
   const [tab, setTab] = useState<Tab>('calendar');
   const [month, setMonth] = useState(() => startOfMonth(new Date()));
   const [selected, setSelected] = useState(() => toDateKey(new Date()));
@@ -84,31 +46,11 @@ function TodoApp({ ownerKey, onResetKey }: TodoAppProps) {
 
   const handleError = useCallback(
     (message: string, error: unknown) => {
-      if (error instanceof OwnerKeyRejectedError) {
-        onResetKey('비밀 문구가 올바르지 않습니다. 다시 입력해 주세요.');
-        return;
-      }
       const detail = error instanceof Error ? error.message : String(error);
       showToast(message ? `${message}: ${detail}` : detail);
     },
-    [onResetKey, showToast],
+    [showToast],
   );
-
-  // 비밀 문구가 서버와 맞는지 먼저 확인한다 (틀리면 읽기는 조용히 빈 결과만 돌아오기 때문)
-  useEffect(() => {
-    let cancelled = false;
-    repo
-      .verifyOwner()
-      .then((ok) => {
-        if (!cancelled && !ok) handleError('', new OwnerKeyRejectedError());
-      })
-      .catch((error: unknown) => {
-        if (!cancelled) handleError('서버에 연결하지 못했습니다', error);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [repo, handleError]);
 
   const { todos, loading, reload, addTodo, updateTodo, removeTodo } = useTodos(
     repo,
@@ -222,7 +164,6 @@ function TodoApp({ ownerKey, onResetKey }: TodoAppProps) {
           <div className={styles.content}>
             <SettingsScreen
               supabaseConfigured={supabaseConfigured}
-              onResetKey={() => onResetKey(null)}
               onClearLocal={() => {
                 clearLocalTodos();
                 void reload();
